@@ -1,15 +1,30 @@
 export default async function handler(req, res) {
   try {
+    const body = req.body || {};
+
     let userInput = "Hello";
 
-    // ✅ Handle Alexa POST request
-    if (req.method === "POST") {
-      const body = req.body || {};
-      userInput =
-        body?.request?.intent?.slots?.query?.value || "Hello";
+    // ✅ Handle LaunchRequest (when opening skill)
+    if (body.request?.type === "LaunchRequest") {
+      return res.status(200).json({
+        version: "1.0",
+        response: {
+          outputSpeech: {
+            type: "PlainText",
+            text: "Hello! You can ask me anything."
+          },
+          shouldEndSession: false
+        }
+      });
     }
 
-    // ✅ Handle browser GET request (testing)
+    // ✅ Handle Intent request
+    if (body.request?.type === "IntentRequest") {
+      userInput =
+        body.request?.intent?.slots?.query?.value || "Hello";
+    }
+
+    // ✅ Handle browser testing
     if (req.method === "GET") {
       userInput = req.query?.q || "Hello";
     }
@@ -30,11 +45,9 @@ export default async function handler(req, res) {
 
     const data = await openaiRes.json();
 
-    console.log("OPENAI RESPONSE:", data);
-
     const reply =
       data.choices?.[0]?.message?.content ||
-      "No response from AI";
+      "Sorry, I couldn't answer.";
 
     res.status(200).json({
       version: "1.0",
@@ -48,14 +61,14 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error("ERROR:", error);
+    console.error(error);
 
     res.status(200).json({
       version: "1.0",
       response: {
         outputSpeech: {
           type: "PlainText",
-          text: error.message || "Error occurred"
+          text: "Error occurred"
         },
         shouldEndSession: true
       }
