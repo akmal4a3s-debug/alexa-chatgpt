@@ -57,8 +57,15 @@ export default async function handler(req, res) {
       version: "1.0",
       response: {
         outputSpeech: {
-          type: "PlainText",
-          text: reply
+                type: "SSML",
+      ssml: `
+        <speak>
+          <amazon:domain name="conversational">
+            <prosody rate="95%" pitch="+2%">
+              ${reply}
+            </prosody>
+          </amazon:domain>
+        </speak>
         },
         shouldEndSession: false
       }
