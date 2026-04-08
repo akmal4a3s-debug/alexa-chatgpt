@@ -2,9 +2,7 @@ export default async function handler(req, res) {
   try {
     const body = req.body || {};
 
-    let userInput = "Hello";
-
-    // ✅ Handle LaunchRequest (when opening skill)
+    // ✅ Handle LaunchRequest (VERY IMPORTANT)
     if (body.request?.type === "LaunchRequest") {
       return res.status(200).json({
         version: "1.0",
@@ -18,13 +16,15 @@ export default async function handler(req, res) {
       });
     }
 
-    // ✅ Handle Intent request
+    let userInput = "Hello";
+
+    // ✅ Handle IntentRequest
     if (body.request?.type === "IntentRequest") {
       userInput =
         body.request?.intent?.slots?.query?.value || "Hello";
     }
 
-    // ✅ Handle browser testing
+    // ✅ Handle GET (browser testing)
     if (req.method === "GET") {
       userInput = req.query?.q || "Hello";
     }
@@ -49,7 +49,7 @@ export default async function handler(req, res) {
       data.choices?.[0]?.message?.content ||
       "Sorry, I couldn't answer.";
 
-    res.status(200).json({
+    return res.status(200).json({
       version: "1.0",
       response: {
         outputSpeech: {
@@ -63,7 +63,7 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error(error);
 
-    res.status(200).json({
+    return res.status(200).json({
       version: "1.0",
       response: {
         outputSpeech: {
