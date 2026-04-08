@@ -58,14 +58,15 @@ export default async function handler(req, res) {
       response: {
         outputSpeech: {
                 type: "SSML",
-      ssml: `
-        <speak>
-          <amazon:domain name="conversational">
-            <prosody rate="95%" pitch="+2%">
-              ${reply}
-            </prosody>
-          </amazon:domain>
-        </speak>
+ssml: `
+<speak>
+  <amazon:domain name="conversational">
+    <prosody rate="92%" pitch="+3%">
+      ${cleanReply}
+      <break time="300ms"/>
+    </prosody>
+  </amazon:domain>
+</speak>
         },
         shouldEndSession: false
       }
