@@ -1,10 +1,18 @@
 export default async function handler(req, res) {
   try {
-    const body = req.body;
+    let userInput = "Hello";
 
-    const userInput =
-      body.request?.intent?.slots?.query?.value ||
-      "Hello";
+    // ✅ Handle Alexa POST request
+    if (req.method === "POST") {
+      const body = req.body || {};
+      userInput =
+        body?.request?.intent?.slots?.query?.value || "Hello";
+    }
+
+    // ✅ Handle browser GET request (testing)
+    if (req.method === "GET") {
+      userInput = req.query?.q || "Hello";
+    }
 
     const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -15,23 +23,18 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "gpt-4o-mini",
         messages: [
-          {
-            role: "system",
-            content: "You are a helpful assistant. Keep answers short and voice-friendly."
-          },
-          {
-            role: "user",
-            content: userInput
-          }
-        ],
-        max_tokens: 120
+          { role: "user", content: userInput }
+        ]
       })
     });
 
     const data = await openaiRes.json();
+
+    console.log("OPENAI RESPONSE:", data);
+
     const reply =
       data.choices?.[0]?.message?.content ||
-      "Sorry, I couldn't respond.";
+      "No response from AI";
 
     res.status(200).json({
       version: "1.0",
@@ -43,13 +46,16 @@ export default async function handler(req, res) {
         shouldEndSession: false
       }
     });
+
   } catch (error) {
+    console.error("ERROR:", error);
+
     res.status(200).json({
       version: "1.0",
       response: {
         outputSpeech: {
           type: "PlainText",
-          text: "There was an error."
+          text: error.message || "Error occurred"
         },
         shouldEndSession: true
       }
